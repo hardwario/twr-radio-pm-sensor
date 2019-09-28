@@ -1,21 +1,21 @@
 <a href="https://www.bigclown.com/"><img src="https://bigclown.sirv.com/logo.png" width="200" alt="BigClown Logo" align="right"></a>
 
-# Firmware Skeleton for BigClown Core Module
+# Firmware for BigClown Particulate Matter Sensor
 
-[![Travis](https://img.shields.io/travis/bigclownlabs/bcf-skeleton/master.svg)](https://travis-ci.org/bigclownlabs/bcf-skeleton)
-[![Release](https://img.shields.io/github/release/bigclownlabs/bcf-skeleton.svg)](https://github.com/bigclownlabs/bcf-skeleton/releases)
-[![License](https://img.shields.io/github/license/bigclownlabs/bcf-skeleton.svg)](https://github.com/bigclownlabs/bcf-skeleton/blob/master/LICENSE)
-[![Twitter](https://img.shields.io/twitter/follow/BigClownLabs.svg?style=social&label=Follow)](https://twitter.com/BigClownLabs)
+## Components
 
-This repository contains firmware skeleton for [Core Module](https://shop.bigclown.com/core-module).
+* [Core Module - NR](https://shop.bigclown.com/core-module-nr/)
+* [Sensirion Particulate Matter Sensor SPS30](https://www.sensirion.com/en/environmental-sensors/particulate-matter-sensors-pm25/)
 
-If you want to get more information about Core Module, firmware and how to work with it, please follow this link:
+## Connection
 
-**https://www.bigclown.com/doc/firmware/basic-overview/**
-
-User's application code (business logic) goes into `app/application.c`.
-The default content works as a *Hello World* example.
-When flashed into Core Module, it toggles LED state with each button press.
+| SPS30 | BigClown Core Module |
+| --- | --- |
+| VDD (1) | VDD |
+| SDA (2) | SDA0 |
+| SCL (3) | SCL0 |
+| SEL (4) | GND |
+| GND (5) | GND |
 
 ## License
 
