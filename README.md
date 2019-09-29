@@ -4,14 +4,14 @@
 
 ## Components
 
-* [Core Module - NR](https://shop.bigclown.com/core-module-nr/)
+* [Core Module](https://shop.bigclown.com/core-module/)
 * [Sensirion Particulate Matter Sensor SPS30](https://www.sensirion.com/en/environmental-sensors/particulate-matter-sensors-pm25/)
 
 ## Connection
 
 | SPS30 | BigClown Core Module |
 | --- | --- |
-| VDD (1) | VDD |
+| VDD (1) | +5V |
 | SDA (2) | SDA0 |
 | SCL (3) | SCL0 |
 | SEL (4) | GND |

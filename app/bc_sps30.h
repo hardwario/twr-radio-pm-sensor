@@ -30,8 +30,15 @@ typedef enum
 {
     BC_SPS30_STATE_ERROR = -1,
     BC_SPS30_STATE_READY = 0,
-    BC_SPS30_STATE_MEASURE = 1,
-    BC_SPS30_STATE_READ = 2
+    BC_SPS30_STATE_INITIALIZE = 1,
+    BC_SPS30_STATE_GET_SERIAL_NUMBER = 2,
+    BC_SPS30_STATE_READ_SERIAL_NUMBER = 3,
+    BC_SPS30_STATE_START_MEASUREMENT = 4,
+    BC_SPS30_STATE_SET_DATAREADY_FLAG = 5,
+    BC_SPS30_STATE_READ_DATAREADY_FLAG = 6,
+    BC_SPS30_STATE_GET_MEASUREMENT_DATA = 7,
+    BC_SPS30_STATE_READ_MEASUREMENT_DATA = 8,
+    BC_SPS30_STATE_STOP_MEASUREMENT = 9
 
 } bc_sps30_state_t;
 
@@ -84,9 +91,6 @@ struct bc_sps30_t
     void *_event_param;
     bc_tick_t _update_interval;
     bc_sps30_state_t _state;
-    bc_tick_t _tick_ready;
-    bc_tick_t _tick_last_measurement;
-    bool _hit_error;
     bool _measurement_valid;
     bc_sps30_mass_concentration_t _mass_concentration;
     bc_sps30_number_concentration_t _number_concentration;

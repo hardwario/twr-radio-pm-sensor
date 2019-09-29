@@ -18,28 +18,42 @@ void sps30_event_handler(bc_sps30_t *self, bc_sps30_event_t event, void *event_p
 
         if (bc_sps30_get_mass_concentration(&sps30, &mass_concentration))
         {
+            /*
             bc_radio_pub_float("pm-sensor/mass-concentration/pm1.0", &mass_concentration.mc_1p0);
             bc_radio_pub_float("pm-sensor/mass-concentration/pm2.5", &mass_concentration.mc_2p5);
             bc_radio_pub_float("pm-sensor/mass-concentration/pm4.0", &mass_concentration.mc_4p0);
             bc_radio_pub_float("pm-sensor/mass-concentration/pm10", &mass_concentration.mc_10p0);
+            */
+            bc_log_info("Mass concentration PM1.0: %f", mass_concentration.mc_1p0);
+            bc_log_info("Mass concentration PM2.5: %f", mass_concentration.mc_2p5);
+            bc_log_info("Mass concentration PM4.0: %f", mass_concentration.mc_4p0);
+            bc_log_info("Mass concentration PM10: %f", mass_concentration.mc_10p0);
         }
 
         bc_sps30_number_concentration_t number_concentration;
 
         if (bc_sps30_get_number_concentration(&sps30, &number_concentration))
         {
+            /*
             bc_radio_pub_float("pm-sensor/number-concentration/pm0.5", &number_concentration.nc_0p5);
             bc_radio_pub_float("pm-sensor/number-concentration/pm1.0", &number_concentration.nc_1p0);
             bc_radio_pub_float("pm-sensor/number-concentration/pm2.5", &number_concentration.nc_2p5);
             bc_radio_pub_float("pm-sensor/number-concentration/pm4.0", &number_concentration.nc_4p0);
             bc_radio_pub_float("pm-sensor/number-concentration/pm10", &number_concentration.nc_10p0);
+            */
+            bc_log_info("Number concentration PM0.5: %f", number_concentration.nc_0p5);
+            bc_log_info("Number concentration PM1.0: %f", number_concentration.nc_1p0);
+            bc_log_info("Number concentration PM2.5: %f", number_concentration.nc_2p5);
+            bc_log_info("Number concentration PM4.0: %f", number_concentration.nc_4p0);
+            bc_log_info("Number concentration PM10: %f", number_concentration.nc_10p0);
         }
 
         float typical_particle_size;
 
         if (bc_sps30_get_typical_particle_size(&sps30, &typical_particle_size))
         {
-            bc_radio_pub_float("pm-sensor/typical-particle-size", &typical_particle_size);
+            //bc_radio_pub_float("pm-sensor/typical-particle-size", &typical_particle_size);
+            bc_log_info("Typical particle size: %f", typical_particle_size);
         }
     }
 }
@@ -56,12 +70,14 @@ void button_event_handler(bc_button_t *self, bc_button_event_t event, void *even
 
 void application_init(void)
 {
+    bc_log_init(BC_LOG_LEVEL_DUMP, BC_LOG_TIMESTAMP_ABS);
+
     // Initialize LED
     bc_led_init(&led, BC_GPIO_LED, false, false);
     bc_led_set_mode(&led, BC_LED_MODE_OFF);
 
     // Initialize radio
-    bc_radio_init(BC_RADIO_MODE_NODE_SLEEPING);
+    //bc_radio_init(BC_RADIO_MODE_NODE_SLEEPING);
 
     // Initialize button
     bc_button_init(&button, BC_GPIO_BUTTON, BC_GPIO_PULL_DOWN, false);
@@ -72,7 +88,7 @@ void application_init(void)
     bc_sps30_set_event_handler(&sps30, sps30_event_handler, NULL);
     bc_sps30_set_update_interval(&sps30, UPDATE_INTERVAL_SECONDS * 1000);
 
-    bc_radio_pairing_request("pm-sensor", VERSION);
+    //bc_radio_pairing_request("pm-sensor", VERSION);
 
     bc_led_pulse(&led, 2000);
 }
