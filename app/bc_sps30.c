@@ -2,7 +2,7 @@
 #include <bc_log.h>
 
 #define _BC_SPS30_DELAY_RUN 100
-#define _BC_SPS30_DELAY_INITIALIZE 500
+#define _BC_SPS30_DELAY_INITIALIZE 1000
 #define _BC_SPS30_DELAY_READ 30
 #define _BC_SPS30_DELAY_MEASUREMENT 250
 
@@ -39,6 +39,11 @@ void bc_sps30_set_event_handler(bc_sps30_t *self, void (*event_handler)(bc_sps30
     self->_event_param = event_param;
 }
 
+void bc_sps30_set_startup_time(bc_sps30_t *self, bc_tick_t startup_time)
+{
+    self->_startup_time = startup_time;
+}
+
 void bc_sps30_set_update_interval(bc_sps30_t *self, bc_tick_t interval)
 {
     self->_update_interval = interval;
@@ -58,6 +63,7 @@ bool bc_sps30_measure(bc_sps30_t *self)
     if (self->_state == BC_SPS30_STATE_READY)
     {
         self->_state = BC_SPS30_STATE_START_MEASUREMENT;
+        self->_start_time = bc_tick_get();
 
         bc_scheduler_plan_now(self->_task_id_measure);
 
@@ -143,19 +149,19 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READY:
             {
-                bc_log_info("State ready");
+                //bc_log_info("State ready");
                 return;
             }
             case BC_SPS30_STATE_INITIALIZE:
             {
-                bc_log_info("State initialize");
+                //bc_log_info("State initialize");
                 self->_state = BC_SPS30_STATE_GET_SERIAL_NUMBER;
 
                 continue;
             }
             case BC_SPS30_STATE_GET_SERIAL_NUMBER:
             {
-                bc_log_info("State get serial number");
+                //bc_log_info("State get serial number");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0xd0, 0x33 };
@@ -180,7 +186,7 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READ_SERIAL_NUMBER:
             {
-                bc_log_info("State read serial number");
+                //bc_log_info("State read serial number");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[48];
@@ -204,11 +210,11 @@ static void _bc_sps30_task_measure(void *param)
                 if (!_bc_sps30_convert_to_words(buffer, sizeof(buffer),
                     (uint16_t *) data.serial, BC_SPS30_NUM_WORDS(data.serial)))
                 {
-                    bc_log_info("Wrong words to bytes");
+                    bc_log_info("Failed to convert to words");
                     continue;
                 }
 
-                bc_log_info("Serial number: %s", data.serial);
+                //bc_log_info("Serial number: %s", data.serial);
 
                 self->_state = BC_SPS30_STATE_READY;
 
@@ -216,7 +222,7 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_START_MEASUREMENT:
             {
-                bc_log_info("State start measurement");
+                //bc_log_info("State start measurement");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[5];
@@ -235,6 +241,7 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
+                    bc_log_info("Failed i2c write");
                     continue;
                 }
 
@@ -244,7 +251,7 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_SET_DATAREADY_FLAG:
             {
-                bc_log_info("State set dataready flag");
+                //bc_log_info("State set dataready flag");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0x02, 0x02 };
@@ -257,6 +264,7 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
+                    bc_log_info("Failed i2c write");
                     continue;
                 }
 
@@ -268,7 +276,7 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READ_DATAREADY_FLAG:
             {
-                bc_log_info("State read dataready flag");
+                //bc_log_info("State read dataready flag");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[3];
@@ -306,7 +314,7 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_GET_MEASUREMENT_DATA:
             {
-                bc_log_info("State get measurement data");
+                //bc_log_info("State get measurement data");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0x03, 0x00 };
@@ -331,7 +339,7 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READ_MEASUREMENT_DATA:
             {
-                bc_log_info("State read measurement data");
+                //bc_log_info("State read measurement data");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[60];
@@ -355,7 +363,7 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!_bc_sps30_convert_to_words(buffer, sizeof(buffer), data->uint16_t, BC_SPS30_NUM_WORDS(data)))
                 {
-                    bc_log_info("Wrong words to bytes");
+                    bc_log_info("Failed to convert to words");
                     continue;
                 }
 
@@ -382,18 +390,25 @@ static void _bc_sps30_task_measure(void *param)
 
                 self->_measurement_valid = true;
 
-                if (self->_event_handler != NULL)
+                if ((bc_tick_get() - self->_start_time) > self->_startup_time)
                 {
-                    self->_event_handler(self, BC_SPS30_EVENT_UPDATE, self->_event_param);
-                }
+                    if (self->_event_handler != NULL)
+                    {
+                        self->_event_handler(self, BC_SPS30_EVENT_UPDATE, self->_event_param);
+                    }
 
-                self->_state = BC_SPS30_STATE_STOP_MEASUREMENT;
+                    self->_state = BC_SPS30_STATE_STOP_MEASUREMENT;
+                }
+                else
+                {
+                    self->_state = BC_SPS30_STATE_SET_DATAREADY_FLAG;
+                }
 
                 continue;
             }
             case BC_SPS30_STATE_STOP_MEASUREMENT:
             {
-                bc_log_info("State stop measurement");
+                //bc_log_info("State stop measurement");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0x01, 0x04 };
@@ -406,6 +421,7 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
+                    bc_log_info("Failed i2c write");
                     continue;
                 }
 

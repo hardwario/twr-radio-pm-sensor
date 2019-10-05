@@ -1,7 +1,8 @@
 #include <application.h>
 #include <bc_sps30.h>
 
-#define UPDATE_INTERVAL_SECONDS 5
+#define UPDATE_INTERVAL_MINUTES 10
+#define STARTUP_SECONDS 30
 
 // LED instance
 bc_led_t led;
@@ -55,6 +56,8 @@ void sps30_event_handler(bc_sps30_t *self, bc_sps30_event_t event, void *event_p
             //bc_radio_pub_float("pm-sensor/typical-particle-size", &typical_particle_size);
             bc_log_info("Typical particle size: %f", typical_particle_size);
         }
+
+        bc_scheduler_plan_now(0);
     }
 }
 
@@ -83,12 +86,50 @@ void application_init(void)
     bc_button_init(&button, BC_GPIO_BUTTON, BC_GPIO_PULL_DOWN, false);
     bc_button_set_event_handler(&button, button_event_handler, NULL);
 
+    // Initialize LCD Module
+    bc_module_lcd_init();
+
     // Initialize particulate matter sensor
-    bc_sps30_init(&sps30, BC_I2C_I2C0, 0x69);
+    bc_sps30_init(&sps30, BC_I2C_I2C1, 0x69);
     bc_sps30_set_event_handler(&sps30, sps30_event_handler, NULL);
-    bc_sps30_set_update_interval(&sps30, UPDATE_INTERVAL_SECONDS * 1000);
+    bc_sps30_set_startup_time(&sps30, STARTUP_SECONDS * 1000);
+    bc_sps30_set_update_interval(&sps30, UPDATE_INTERVAL_MINUTES * 60 * 1000);
 
     //bc_radio_pairing_request("pm-sensor", VERSION);
 
     bc_led_pulse(&led, 2000);
+}
+
+void application_task(void)
+{
+    bc_sps30_mass_concentration_t mass_concentration;
+
+    if (!bc_module_lcd_is_ready() || !bc_sps30_get_mass_concentration(&sps30, &mass_concentration))
+    {
+        bc_scheduler_plan_current_relative(5000);
+        return;
+    }
+
+    bc_system_pll_enable();
+
+    bc_module_lcd_clear();
+
+    char str[32];
+    bc_module_lcd_set_font(&bc_font_ubuntu_24);
+
+    snprintf(str, sizeof(str), "1.0: %.2f", mass_concentration.mc_1p0);
+    bc_module_lcd_draw_string(10, 10, str, true);
+
+    snprintf(str, sizeof(str), "2.5: %.2f", mass_concentration.mc_2p5);
+    bc_module_lcd_draw_string(10, 40, str, true);
+
+    snprintf(str, sizeof(str), "4.0: %.2f", mass_concentration.mc_4p0);
+    bc_module_lcd_draw_string(10, 70, str, true);
+
+    snprintf(str, sizeof(str), "10: %.2f", mass_concentration.mc_10p0);
+    bc_module_lcd_draw_string(10, 100, str, true);
+
+    bc_system_pll_disable();
+
+    bc_module_lcd_update();
 }

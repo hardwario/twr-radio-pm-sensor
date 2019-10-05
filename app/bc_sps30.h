@@ -95,6 +95,8 @@ struct bc_sps30_t
     bc_sps30_mass_concentration_t _mass_concentration;
     bc_sps30_number_concentration_t _number_concentration;
     float _typical_particle_size;
+    bc_tick_t _startup_time;
+    bc_tick_t _start_time;
 };
 
 //! @endcond
@@ -112,6 +114,12 @@ void bc_sps30_init(bc_sps30_t *self, bc_i2c_channel_t i2c_channel, uint8_t i2c_a
 //! @param[in] event_param Optional event parameter (can be NULL)
 
 void bc_sps30_set_event_handler(bc_sps30_t *self, void (*event_handler)(bc_sps30_t *, bc_sps30_event_t, void *), void *event_param);
+
+//! @brief Set startup time (how long the fan blows air before the measurement)
+//! @param[in] self Instance
+//! @param[in] interval Startup time
+
+void bc_sps30_set_startup_time(bc_sps30_t *self, bc_tick_t startup_time);
 
 //! @brief Set measurement interval
 //! @param[in] self Instance
