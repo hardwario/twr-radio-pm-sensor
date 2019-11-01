@@ -1,5 +1,4 @@
 #include <bc_sps30.h>
-#include <bc_log.h>
 
 #define _BC_SPS30_DELAY_RUN 100
 #define _BC_SPS30_DELAY_INITIALIZE 1000
@@ -135,7 +134,6 @@ static void _bc_sps30_task_measure(void *param)
         {
             case BC_SPS30_STATE_ERROR:
             {
-                bc_log_info("State error");
                 self->_measurement_valid = false;
 
                 if (self->_event_handler != NULL)
@@ -149,19 +147,16 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READY:
             {
-                //bc_log_info("State ready");
                 return;
             }
             case BC_SPS30_STATE_INITIALIZE:
             {
-                //bc_log_info("State initialize");
                 self->_state = BC_SPS30_STATE_GET_SERIAL_NUMBER;
 
                 continue;
             }
             case BC_SPS30_STATE_GET_SERIAL_NUMBER:
             {
-                //bc_log_info("State get serial number");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0xd0, 0x33 };
@@ -174,7 +169,6 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c write");
                     continue;
                 }
 
@@ -186,7 +180,6 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READ_SERIAL_NUMBER:
             {
-                //bc_log_info("State read serial number");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[48];
@@ -203,18 +196,14 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_read(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c read");
                     continue;
                 }
 
                 if (!_bc_sps30_convert_to_words(buffer, sizeof(buffer),
                     (uint16_t *) data.serial, BC_SPS30_NUM_WORDS(data.serial)))
                 {
-                    bc_log_info("Failed to convert to words");
                     continue;
                 }
-
-                //bc_log_info("Serial number: %s", data.serial);
 
                 self->_state = BC_SPS30_STATE_READY;
 
@@ -222,7 +211,6 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_START_MEASUREMENT:
             {
-                //bc_log_info("State start measurement");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[5];
@@ -241,7 +229,6 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c write");
                     continue;
                 }
 
@@ -251,7 +238,6 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_SET_DATAREADY_FLAG:
             {
-                //bc_log_info("State set dataready flag");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0x02, 0x02 };
@@ -264,7 +250,6 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c write");
                     continue;
                 }
 
@@ -276,7 +261,6 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READ_DATAREADY_FLAG:
             {
-                //bc_log_info("State read dataready flag");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[3];
@@ -289,13 +273,11 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_read(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c read");
                     continue;
                 }
 
                 if (_bc_sps30_calculate_crc(&buffer[0], 2) != buffer[2])
                 {
-                    bc_log_info("Wrong CRC");
                     continue;
                 }
 
@@ -314,7 +296,6 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_GET_MEASUREMENT_DATA:
             {
-                //bc_log_info("State get measurement data");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0x03, 0x00 };
@@ -327,7 +308,6 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c write");
                     continue;
                 }
 
@@ -339,7 +319,6 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_READ_MEASUREMENT_DATA:
             {
-                //bc_log_info("State read measurement data");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 uint8_t buffer[60];
@@ -357,13 +336,11 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_read(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c read");
                     continue;
                 }
 
                 if (!_bc_sps30_convert_to_words(buffer, sizeof(buffer), data->uint16_t, BC_SPS30_NUM_WORDS(data)))
                 {
-                    bc_log_info("Failed to convert to words");
                     continue;
                 }
 
@@ -408,7 +385,6 @@ static void _bc_sps30_task_measure(void *param)
             }
             case BC_SPS30_STATE_STOP_MEASUREMENT:
             {
-                //bc_log_info("State stop measurement");
                 self->_state = BC_SPS30_STATE_ERROR;
 
                 static const uint8_t buffer[] = { 0x01, 0x04 };
@@ -421,7 +397,6 @@ static void _bc_sps30_task_measure(void *param)
 
                 if (!bc_i2c_write(self->_i2c_channel, &transfer))
                 {
-                    bc_log_info("Failed i2c write");
                     continue;
                 }
 
@@ -470,7 +445,6 @@ static bool _bc_sps30_convert_to_words(uint8_t *buffer, size_t buffer_length, ui
 
     if (buffer_length != (data_length * 3))
     {
-        bc_log_info("Wrong data length");
         return false;
     }
 
@@ -478,7 +452,6 @@ static bool _bc_sps30_convert_to_words(uint8_t *buffer, size_t buffer_length, ui
     {
         if (_bc_sps30_calculate_crc(&buffer[i], 2) != buffer[i + 2])
         {
-            bc_log_info("Failed calculate crc");
             return false;
         }
 

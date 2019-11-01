@@ -9,11 +9,11 @@
 
 ## Connection
 
-| SPS30 | BigClown Core Module |
+| Sensirion SPS30 | BigClown Core Module (revision >= 2.3) |
 | --- | --- |
 | VDD (1) | +5V |
-| SDA (2) | SDA0 |
-| SCL (3) | SCL0 |
+| SDA (2) | P17 (SDA1) |
+| SCL (3) | P16 (SCL1) |
 | SEL (4) | GND |
 | GND (5) | GND |
 
