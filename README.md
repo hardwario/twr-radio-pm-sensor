@@ -1,6 +1,6 @@
-<a href="https://www.bigclown.com/"><img src="https://bigclown.sirv.com/logo.png" width="200" alt="BigClown Logo" align="right"></a>
+<a href="https://www.hardwario.com/"><img src="https://www.hardwario.com/ci/assets/hw-logo.svg" width="200" alt="HARDWARIO Logo" align="right"></a>
 
-# Firmware for BigClown Particulate Matter Sensor
+# Firmware for HARDWARIO Particulate Matter Sensor
 
 ## Components
 
@@ -9,7 +9,7 @@
 
 ## Connection
 
-| Sensirion SPS30 | BigClown Core Module (revision >= 2.3) |
+| Sensirion SPS30 | HARDWARIO Core Module (revision >= 2.3) |
 | --- | --- |
 | VDD (1) | +5V |
 | SDA (2) | P17 (SDA1) |
